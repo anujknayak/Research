@@ -4,8 +4,8 @@ numIters = 1000;
 simConvergenceEnable = 1; % flag to check convergence time
 % block densities are uniform
 % the best strategy is manually included in the strategy set
-numSnapShots = 50; % total number of time slots
-numSlotsPerBatch = 1; % number of time-slots per batch
+numSnapShots = 100; % total number of time slots
+numSlotsPerBatch = 2; % number of time-slots per batch
 numBatches = numSnapShots/numSlotsPerBatch; % number of batches
 
 % initializing scenario
@@ -70,9 +70,9 @@ for iterInd = 1:numIters
             % uncomment if condition to force only one strategy per batch
             % since there are no switching costs, strategy is changed for every
             % slot and selected randomly as per the distribution
-            %if timeInd == 1 %
-            strategyIndex = randsample(1:Params.strategySetSize, 1, true ,strategyProb);
-            %end
+            if timeInd == 1 %
+                strategyIndex = randsample(1:Params.strategySetSize, 1, true ,strategyProb);
+            end
             strategyCurrent = strategySet(:, strategyIndex);
             % compute reward for the chosen strategy for each time slot
             % reward is directly proportional to the block density and the investment
@@ -90,7 +90,7 @@ for iterInd = 1:numIters
         % Calculate the reward for the whole batch - equation 11
         virtualBlkReward = avgBlkReward./chanProbVec;
         
-        % computing gPrime - equation 15
+        % computing gPrime - equation 16
         strategyChannelIndicVec = double(strategySet.'~=0);
         gPrime = sum(strategyChannelIndicVec.*(ones(Params.strategySetSize, 1)*virtualBlkReward), 2);
         
