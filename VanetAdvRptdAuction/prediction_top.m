@@ -55,3 +55,4 @@ else
     paymentPredictVec = paymentVec;
     stateStruct.paymentHistoryMat(:, timeStamp) = paymentVec;
 end
+

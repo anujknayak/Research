@@ -1,8 +1,0 @@
-function [dbg] = debug_init(Params, Scenario)
-
-    rewardResMat = bidResX.*rewardEstMat; dbg.rewardEstAccMat = dbg.rewardEstAccMat + rewardResMat;
-    paymentPlayerTmp = zeros(size(bidResX, 2), size(bidResX, 1));paymentPlayerTmp(find(bidResX)) = paymentVec;paymentPlayerTmp = paymentPlayerTmp.';
-    dbg.paymentAccMat = dbg.paymentAccMat + paymentPlayerTmp;
-    costBidMat = bidIndicMat*Params.cost; dbg.costAccMat = dbg.costAccMat + costBidMat;
-    utilityResMat = (rewardResMat./(costBidMat+paymentPlayerTmp)); utilityResMat(find(isnan(utilityResMat))) = 1;
-    dbg.utilityAccMat = dbg.utilityAccMat + utilityResMat;

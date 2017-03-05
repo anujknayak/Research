@@ -19,7 +19,7 @@ rewardEstMat = valuationMat.*alphaState;
 
 % compute cumulMat
 cdfBins = [0:1/Params.numQntzLvls:1-1/Params.numQntzLvls]+0.5/Params.numQntzLvls;
-cdfMat2 = cdfMat.^(Params.numPlayers-1);
+cdfMat2 = cdfMat; %.^(Params.numPlayers-1);
 cumulMat = zeros(size(rewardEstMat));
 for indBlk = 1:size(rewardEstMat, 1)
     cumulMat(indBlk, :) = interp1(cdfBins, cdfMat2(indBlk, :), rewardEstMat(indBlk, :));
@@ -58,13 +58,16 @@ stateStruct.slopeVal    = slopeVal;
 stateStruct.kMat        = kMat;
 
 if dbg.performance == 1
-    rewardResMat = bidResX.*rewardEstMat; dbg.rewardEstAccMat = dbg.rewardEstAccMat + rewardResMat;rewardResMat(rewardResMat == 0) = Params.entryFee;
-    paymentPlayerTmp = zeros(size(bidResX, 2), size(bidResX, 1));paymentPlayerTmp(find(bidResX.')) = paymentVec;paymentPlayerTmp = paymentPlayerTmp.';
+    rewardResMat = 100*bidResX.*rewardEstMat; dbg.rewardEstAccMat = dbg.rewardEstAccMat + rewardResMat;
+    %rewardResMat(rewardResMat == 0) = Params.entryFee;
+    paymentPlayerTmp = zeros(size(bidResX, 2), size(bidResX, 1));paymentPlayerTmp(find(bidResX.')) = 100*paymentVec;paymentPlayerTmp = paymentPlayerTmp.';
     dbg.paymentAccMat = dbg.paymentAccMat + paymentPlayerTmp;
     costBidMat = bidIndicMat*Params.cost; dbg.costAccMat = dbg.costAccMat + costBidMat;
     utilityResMat = (rewardResMat./(Params.entryFee+costBidMat+paymentPlayerTmp)); utilityResMat(find(isnan(utilityResMat))) = 1;
     dbg.utilityAccMat = dbg.utilityAccMat + utilityResMat;
     dbg.bidIndicAccMat = dbg.bidIndicAccMat + bidIndicMat;
+    dbg.utilityCumulMat(:,:,end+1) = utilityResMat;
+%    dbg.rewardCumulMat(:,:,end+1) = rewardResMat;
 end
 
 

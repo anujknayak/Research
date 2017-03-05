@@ -1,9 +1,12 @@
-numSnapShots = 1000;
+%clear all;clc;
+numSnapShots = 10000;
 linPredEnable = 1;  % 1 -> Enable linear prediction, 0 -> disable linear prediction
                     % run with 1 followed by 0 to get plot of MSE in payment prediction
 
-Plot.paymentMSE = 1;
+Plot.paymentMSE = 0;
 Plot.fairness = 0;
+Plot.cumulativeUtility = 1;
+Plot.cumulativeReward = 0;
 
 [Scenario] = scenario_init();
 
@@ -112,6 +115,29 @@ if Plot.paymentMSE == 1
         subplot(212);plot([payMat(1,:);payPMat(1,:)].', '-^', 'linewidth', 2);ylim([0 1]);hold on;xlim([500 700]);
         legend('actual payment','predicted payment','actual payment','repeated payment');
         xlabel('time index');ylabel('payment (actual/predited)');set(gca, 'fontsize', 20);
+    end
+end
+
+if Plot.cumulativeUtility == 1
+    figure(101);
+    if linPredEnable == 1
+        cumulUtility = cumsum(dbg.utilityCumulMat, 3);
+        plot(permute(cumulUtility(1,1,:),[1 3 2] ),'b');hold on
+    else
+        cumulUtility = cumsum(dbg.utilityCumulMat, 3);
+        plot(permute(cumulUtility(1,1,:),[1 3 2] ),'r');hold off;
+
+    end
+end
+
+if Plot.cumulativeReward == 1
+    figure(101);
+    if linPredEnable == 1
+        cumulUtility = cumsum(dbg.utilityCumulMat, 3);
+        plot(permute(cumulUtility(1,1,:),[1 3 2] ),'b');hold on
+    else
+        cumulUtility = cumsum(dbg.utilityCumulMat, 3);
+        plot(permute(cumulUtility(1,1,:),[1 3 2] ),'r');hold off
     end
 end
 
