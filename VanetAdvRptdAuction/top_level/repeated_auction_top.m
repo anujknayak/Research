@@ -1,4 +1,4 @@
-function [bidResX, paymentVec, stateStruct, dbg]  = repeated_auction_top(valuationMat, paymentPredict, cdfMat, stateStruct, Params, dbg)
+function [bidResX, paymentVec, stateStruct, dbg]  = repeated_auction_top(valuationMat, blkDenVec, paymentPredict, cdfMat, indSnapShot, stateStruct, Params, dbg)
 
 slopeVal    = stateStruct.slopeVal;
 alphaState  = stateStruct.alphaState;
@@ -6,8 +6,8 @@ kMat        = stateStruct.kMat;
 
 % determine tDecay - as a function of Kalman filter output
 % >>>> update tDecay computation later - [TODO]
-tDecay = Params.tDecayMin*ones(size(alphaState));
-tRecovery = Params.tRecoveryMin*ones(size(alphaState));
+tDecay = (Params.tDecayMin*blkDenVec + Params.tDecayMax*(1-blkDenVec))*ones(1, size(alphaState, 2));
+tRecovery = (Params.tRecoveryMax*blkDenVec + Params.tRecoveryMin*(1-blkDenVec))*ones(1, size(alphaState, 2));
 
 rewardEstMat = valuationMat.*alphaState;
 
@@ -26,11 +26,26 @@ for indBlk = 1:size(rewardEstMat, 1)
 end
 
 % computing expected reward
-gammaMat = (1-cumulMat)*(1/(Params.cost+Params.entryFee))+ (100*rewardEstMat./((Params.entryFee+Params.cost+100*paymentPredict)*ones(1,size(rewardEstMat, 2)))).*cumulMat;
+gammaMat = (1-cumulMat)*(1/(Params.cost+Params.entryFee))+ (Params.kReward*rewardEstMat./((Params.entryFee+Params.cost+Params.kPayment*paymentPredict)*ones(1,size(rewardEstMat, 2)))).*cumulMat;
+
+% figure(1);plot(cdfMat(1,:));ylim([0 1]);
+% drawnow();
 
 % bidding decision
-bidIndicMat = gammaMat>(1/Params.entryFee);
+bidIndicMat = (gammaMat>(1/Params.entryFee)) |  (rand(size(gammaMat))<=Params.pExplore);
 % dim: numBlocks x numPlayers
+
+% % >>>> for debug begin
+% if (indSnapShot < 40 && Params.linPredEnable == 1)
+%     bidIndicMat = ones(size(bidIndicMat));
+% elseif mod(indSnapShot, 5) == 0
+% %     for indBlk = 1:size(paymentPredict, 1)
+% %         if blkDenVec(indBlk)<0.25
+% %             bidIndicMat(indBlk, :) = 1;
+% %         end
+% %     end
+% end
+% >>>> for debug end
 
 % auction result
 [bidResX, paymentVec] = second_price(rewardEstMat.*bidIndicMat);
@@ -58,16 +73,21 @@ stateStruct.slopeVal    = slopeVal;
 stateStruct.kMat        = kMat;
 
 if dbg.performance == 1
-    rewardResMat = 100*bidResX.*rewardEstMat; dbg.rewardEstAccMat = dbg.rewardEstAccMat + rewardResMat;
-    %rewardResMat(rewardResMat == 0) = Params.entryFee;
-    paymentPlayerTmp = zeros(size(bidResX, 2), size(bidResX, 1));paymentPlayerTmp(find(bidResX.')) = 100*paymentVec;paymentPlayerTmp = paymentPlayerTmp.';
-    dbg.paymentAccMat = dbg.paymentAccMat + paymentPlayerTmp;
-    costBidMat = bidIndicMat*Params.cost; dbg.costAccMat = dbg.costAccMat + costBidMat;
-    utilityResMat = (rewardResMat./(Params.entryFee+costBidMat+paymentPlayerTmp)); utilityResMat(find(isnan(utilityResMat))) = 1;
-    dbg.utilityAccMat = dbg.utilityAccMat + utilityResMat;
-    dbg.bidIndicAccMat = dbg.bidIndicAccMat + bidIndicMat;
-    dbg.utilityCumulMat(:,:,end+1) = utilityResMat;
-%    dbg.rewardCumulMat(:,:,end+1) = rewardResMat;
+    rewardResMat = Params.kReward*bidResX.*rewardEstMat;
+    paymentPlayerMat = zeros(size(bidResX, 1), size(bidResX, 2));
+    %paymentPlayerTmp(find(bidResX.')) = Params.kPayment*paymentVec;paymentPlayerTmp = paymentPlayerTmp.';
+    for indBlk = 1:size(bidResX, 1)
+        bidderIdx = find(bidResX(indBlk, :));
+        if ~isempty(bidderIdx)
+            paymentPlayerMat(indBlk, bidderIdx) = paymentVec(indBlk)*Params.kPayment;
+        end
+    end
+    costBidMat = bidIndicMat*Params.cost;
+    %utilityResMat = (rewardResMat./(Params.entryFee+costBidMat+paymentPlayerMat)); utilityResMat(find(isnan(utilityResMat))) = 1;
+    utilityResMat = rewardResMat-(Params.entryFee+costBidMat+paymentPlayerMat); %utilityResMat(find(isnan(utilityResMat))) = 1;
+    dbg.utilityAllMat(:,:,end+1) = utilityResMat;
+    dbg.rewardAllMat(:,:,end+1) = rewardResMat;
+    dbg.costAllMat(:, :, end+1) = costBidMat + paymentPlayerMat;
 end
 
 

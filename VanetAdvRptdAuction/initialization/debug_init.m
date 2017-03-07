@@ -1,10 +1,10 @@
 function [dbg] = debug_init(Params, Scenario)
 
-dbg.rewardEstAccMat = zeros(Params.blkDenGen.numBlk, Params.numPlayers); 
-dbg.paymentAccMat   = zeros(Params.blkDenGen.numBlk, Params.numPlayers); 
-dbg.costAccMat      = zeros(Params.blkDenGen.numBlk, Params.numPlayers); 
-dbg.utilityAccMat   = zeros(Params.blkDenGen.numBlk, Params.numPlayers);
-dbg.utilityCumulMat = zeros(Params.blkDenGen.numBlk, Params.numPlayers);
+dbg.rewardEstAllMat = zeros(Params.blkDenGen.numBlk, Params.numPlayers); 
+dbg.paymentAllMat   = zeros(Params.blkDenGen.numBlk, Params.numPlayers); 
+dbg.costAllMat      = zeros(Params.blkDenGen.numBlk, Params.numPlayers); 
+dbg.utilityAllMat   = zeros(Params.blkDenGen.numBlk, Params.numPlayers);
+dbg.rewardAllMat    = zeros(Params.blkDenGen.numBlk, Params.numPlayers);
+dbg.bidIndicAllMat  = zeros(Params.blkDenGen.numBlk, Params.numPlayers);
 
-dbg.bidIndicAccMat = zeros(Params.blkDenGen.numBlk, Params.numPlayers);
 
