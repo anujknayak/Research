@@ -1,6 +1,7 @@
 %clear all;clc;
 numSnapShots = 1000;
-linPredEnableVec = [1 0];  % 1 -> Enable linear prediction, 0 -> disable linear prediction
+linPredEnableVec = [0];  % 1 -> Enable linear prediction, 0 -> disable linear prediction
+sampleDirichletEn = 1; % does not perform well - consider deletion [TODO]
 % run with 1 followed by 0 to get plot of MSE in payment prediction
 
 Plot.paymentMSE = 1;
@@ -8,6 +9,7 @@ Plot.fairness = 0;
 Plot.cumulativeUtility = 1;
 Plot.cumulativeReward = 1;
 Plot.cumulativeCost = 1;
+Plot.cumulativeBidRes = 1;
 
 for linPredEnableInd = 1:length(linPredEnableVec)
     
@@ -22,6 +24,7 @@ for linPredEnableInd = 1:length(linPredEnableVec)
     
     [dbg] = debug_init(Params, Scenario);
     dbg.performance = 1;
+    dbg.sampleDirichletEn = sampleDirichletEn;
     
     rand('seed',0);
     randn('seed',0);
@@ -29,7 +32,11 @@ for linPredEnableInd = 1:length(linPredEnableVec)
     % Initializations
     blkDenVecPrev = Scenario.blkDenInitVal;
     beliefCntMat = Params.learning.beliefCntMat;
-    cdfMat = 1*ones(size(beliefCntMat)); % all bid in the first iteration
+    if dbg.sampleDirichletEn == 1
+        cdfMat = 1*ones(Params.blkDenGen.numBlk, Params.numPlayers, Params.numQntzLvls);
+    else
+        cdfMat = 1*ones(size(beliefCntMat)); % all bid in the first iteration
+    end
     priorVec = ones(size(cdfMat))/size(cdfMat, 2);
     paymentPredictVec = zeros(Params.blkDenGen.numBlk, 1);
     
@@ -89,7 +96,11 @@ for linPredEnableInd = 1:length(linPredEnableVec)
             paymentPredictVec = paymentVec;
         end
         
-        [cdfMat, pmfMat] = dirichlet_mean(beliefCntMat, priorVec, Params.learning.concentrPrm);
+        if dbg.sampleDirichletEn == 1
+            [cdfMat, pmfMat] = dirichlet_sample(beliefCntMat, priorVec, Params.learning.concentrPrm, Params.numPlayers);
+        else
+            [cdfMat, pmfMat] = dirichlet_mean(beliefCntMat, priorVec, Params.learning.concentrPrm);
+        end
         
         %     % >>>> FOR DEBUG
         %figure(4);plot(cdfMat(4, :));

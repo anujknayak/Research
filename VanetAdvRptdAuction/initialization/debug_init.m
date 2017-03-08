@@ -6,5 +6,6 @@ dbg.costAllMat      = zeros(Params.blkDenGen.numBlk, Params.numPlayers);
 dbg.utilityAllMat   = zeros(Params.blkDenGen.numBlk, Params.numPlayers);
 dbg.rewardAllMat    = zeros(Params.blkDenGen.numBlk, Params.numPlayers);
 dbg.bidIndicAllMat  = zeros(Params.blkDenGen.numBlk, Params.numPlayers);
+dbg.bidResAllMat    = zeros(Params.blkDenGen.numBlk, Params.numPlayers);
 
 

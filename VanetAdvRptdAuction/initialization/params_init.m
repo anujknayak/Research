@@ -1,7 +1,7 @@
 function [Params] = params_init(Scenario)
 
 Params.numPlayers               = 50; % number of players
-Params.numQntzLvls              = 10;
+Params.numQntzLvls              = 100;
 
 Params.blkDenGen.numBlkRow      = Scenario.numBlkRow; % number of rows in the grid
 Params.blkDenGen.numBlkCol      = Scenario.numBlkCol; % number of columns in the grid
@@ -23,7 +23,7 @@ Params.auction.pExplore         = 0.1;
 
 Params.learning.numQntzLvls     = Params.numQntzLvls;
 Params.learning.beliefCntMat    = zeros(Params.blkDenGen.numBlk, Params.learning.numQntzLvls);
-Params.learning.concentrPrm     = 10;
+Params.learning.concentrPrm     = 0;
 Params.learning.forgetFactor    = 0.1;
 
 Params.prediction.lpcOrder      = 20;

@@ -21,18 +21,38 @@ rewardEstMat = valuationMat.*alphaState;
 cdfBins = [0:1/Params.numQntzLvls:1-1/Params.numQntzLvls]+0.5/Params.numQntzLvls;
 cdfMat2 = cdfMat; %.^(Params.numPlayers-1);
 cumulMat = zeros(size(rewardEstMat));
-for indBlk = 1:size(rewardEstMat, 1)
-    cumulMat(indBlk, :) = interp1(cdfBins, cdfMat2(indBlk, :), rewardEstMat(indBlk, :));
+if dbg.sampleDirichletEn == 1
+    for indBlk = 1:size(rewardEstMat, 1)
+        for indPlayer = 1:size(rewardEstMat, 2)
+            cumulMat(indBlk, indPlayer) = interp1(cdfBins, permute(cdfMat2(indBlk, indPlayer, :), [1 3 2]), rewardEstMat(indBlk, indPlayer));
+        end
+    end
+%    figure(1);surf(squeeze(cdfMat(5, :, :)));
+%     figure(1);plot(squeeze(cdfMat(1, 1, :)));ylim([0 1]);
+%     figure(2);plot(squeeze(pdfMat(1, 1, :)));ylim([0 1]);
+%     drawnow();
+else
+    for indBlk = 1:size(rewardEstMat, 1)
+        cumulMat(indBlk, :) = interp1(cdfBins, cdfMat2(indBlk, :), rewardEstMat(indBlk, :));
+    end
+%     figure(1);plot(cdfMat(1,:));ylim([0 1]);
+%     drawnow();
 end
 
 % computing expected reward
 gammaMat = (1-cumulMat)*(1/(Params.cost+Params.entryFee))+ (Params.kReward*rewardEstMat./((Params.entryFee+Params.cost+Params.kPayment*paymentPredict)*ones(1,size(rewardEstMat, 2)))).*cumulMat;
 
-% figure(1);plot(cdfMat(1,:));ylim([0 1]);
-% drawnow();
+
 
 % bidding decision
-bidIndicMat = (gammaMat>(1/Params.entryFee)) |  (rand(size(gammaMat))<=Params.pExplore);
+if dbg.sampleDirichletEn == 1
+    bidIndicMat = gammaMat>(1/Params.entryFee) |  (rand(size(gammaMat))<=Params.pExplore);
+else
+    bidIndicMat = (gammaMat>(1/Params.entryFee)) |  (rand(size(gammaMat))<=Params.pExplore);
+end
+
+%figure(200);imagesc(bidIndicMat);drawnow();
+
 % dim: numBlocks x numPlayers
 
 % % >>>> for debug begin
@@ -88,6 +108,7 @@ if dbg.performance == 1
     dbg.utilityAllMat(:,:,end+1) = utilityResMat;
     dbg.rewardAllMat(:,:,end+1) = rewardResMat;
     dbg.costAllMat(:, :, end+1) = costBidMat + paymentPlayerMat;
+    dbg.bidResAllMat(:, :, end+1) = bidResX;
 end
 
 
