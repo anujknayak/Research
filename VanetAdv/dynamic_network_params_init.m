@@ -8,8 +8,8 @@ Params.numBlk = Scenario.numBlk; % number of blocks
 Params.budget = 100*ones(Params.numBlk, 1); % total budget
 Params.gammaVal = 0; % uncertainty in random walk of block densities
 Params.maxGPrimeVal = 20; % strategy update parameter
-
-Params.w = round(100*rand(Params.numBlk, 1)); % weight vector
+Params.w = round(98*rand(Params.numBlk, 1))+1; % weight vector
+Params.strategySetSize = min(1000, 2^Params.numBlk);
 
 % >>> for debug
 %Params.w = ones(size(Params.w));
